@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>CSR Generator</title>
+	<link rel="stylesheet" type="text/css" href="/static/style.css">
+
+</head>
+<body>
+	<div id="outer">
+	</div>
+	<div id="fields">
+		<form id="mainform" action="javascript:doIt()">
+		<h1>CSR Generator</h1>
+		<dl>
+			<dt>Common Name</dt><dd><input name="CN" placeholder="e.g. www.example.com"></dd>
+			<div id="addldns">
+			</div>
+			<dt>&nbsp;</dt><dd>
+				<button class="btn" id="addmore" onclick="add_more();return false">Add More</button>
+			</dd>
+			<hr>
+			<dt>Email Address</dt><dd><input name="emailAddress" placeholder="e.g. tls@example.com"></dd>
+			<dt>Organization</dt><dd><input name="O" placeholder="e.g. FooBar Inc."></dd>
+			<dt>Department</dt><dd><input name="OU" placeholder="e.g. Web Security"></dd>
+			<dt>City</dt><dd><input name="L" placeholder="e.g. San Francisco"></dd>
+			<dt>State/Province</dt><dd><input name="ST" placeholder="e.g. California"></dd>
+			<dt>Country</dt><dd><input name="C" maxlength="2" placeholder="e.g. US (two-letter only)"></dd>
+			<hr/>
+			<dt>Key Size</dt>
+			<dd>
+				<select class="btn" name="bits">
+					<option value="2048">2048 (recommended)</option>
+					<option value="4096">4096 (a bit crazy)</option>
+				</select>
+			</dd>
+			<dt>
+				CSR Signature
+				<div class="fn">This is not your cert signature</div>
+			</dt>
+			<dd>
+				<select class="btn" name="hash">
+					<option value="sha1">SHA1</option>
+					<option value="sha256">SHA256</option>
+				</select>
+			</dd>
+			<hr style="clear:both"/>
+			<div class="tn">Optional for encrypting your private key</div>
+			<dt>Key Password</dt><dd><input name="pw" id="pw" type="password" placeholder="Optional Password">
+			<button id="eye" class="off" onclick="eyeclick();return false;"><i class="flaticon-eye"></i></button></dd>
+			<hr style="clear:both"/>
+			<dt>&nbsp;</dt>
+			<dd><button class="btn">Create Key and CSR</button></dd>
+		</dl>
+		</form>
+		<div id="outputarea">
+			<hr>
+			<div class="outlabel">Private Key</div>
+			<textarea class="output" id="keyout" spellcheck="false"
+			onfocus="this.select();"></textarea>
+			<div class="outlabel">CSR</div>
+			<textarea class="output" id="csrout" spellcheck="false"
+			onfocus="this.select();"></textarea>
+		</div>
+	</div>
+</body>
+<script><!--
+	var TEMPLATE='<dt>Additional DNS</dt><dd><input name="__name__" placeholder="e.g. www.alternate.com"></dd>';
+	var global_counter=1;
+	function add_more() {
+		holder = document.getElementById("addldns");
+		div = document.createElement("div");
+		div.innerHTML = TEMPLATE.replace("__name__", "DNS." + global_counter++);
+		holder.appendChild(div);
+	}
+	function eyeclick() {
+		var btn = document.getElementById("eye");
+		var input = document.getElementById("pw");
+		if (btn.className == "on") {
+			btn.className = "off";
+			input.setAttribute("type","password")
+		} else {
+			btn.className = "on";
+			input.setAttribute("type","text")
+		}
+	}
+	function doIt() {
+		var f = document.getElementById("mainform");
+		if (!(f['CN'].value||f['emailAddress'].value||f['O'].value||f['OU'].value||
+			f['L'].value||f['ST'].value||f['C'].value)) {
+			alert("You have to provide at least SOMETHING for a certificate subject.");
+			return;
+		}
+
+		var r = new XMLHttpRequest();
+		r.onreadystatechange = function () {
+		  if (r.readyState != 4) return;
+		  if (r.status != 200) {
+		  	alert("Error "+r.status+":\n"+
+		  		r.responseText);
+		  	return;
+		  }
+		  var data = JSON.parse(r.responseText);
+		  var keyout = document.getElementById("keyout");
+		  var csrout = document.getElementById("csrout");
+		  var outputarea = document.getElementById("outputarea");
+		  keyout.value = data['key'].trim();
+		  csrout.value = data['csr'].trim();
+
+		  outputarea.style.display="block";
+		  csrout.style.width = csrout.scrollWidth + "px";
+		  keyout.style.width = keyout.scrollWidth + "px";
+		  csrout.style.height = "10px";
+		  keyout.style.height = "10px";
+		  csrout.style.height = csrout.scrollHeight + "px";
+		  keyout.style.height = keyout.scrollHeight + "px";
+		  outputarea.scrollIntoView(true);
+		};
+		r.open("POST", "/gen.json", true);
+		r.send(new FormData(f));
+	}
+
+--></script>
+</html>
