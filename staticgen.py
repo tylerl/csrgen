@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import zlib
 import base64
 import sys

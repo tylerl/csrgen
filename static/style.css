@@ -26,12 +26,20 @@ body {
 #fields dd {
 	margin-bottom: 0.3em;
 }
-#fields dd input {
-	width: 20em;
+#fields dd input, #fields dd textarea {
+	width: 300px;
 	padding: 5px 5px;
 	font-size:11pt;
 }
 #fields dl {
+}
+#mykey_div {
+	padding-top:5px;
+}
+#fields #mykey {
+	font-size: 7.5px;
+	font-family: monospace;
+	height: 8em;
 }
 hr {
 	height:1px;

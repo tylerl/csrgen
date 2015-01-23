@@ -29,11 +29,17 @@
 			<hr/>
 			<dt>Key Size</dt>
 			<dd>
-				<select class="btn" name="bits">
+				<select class="btn" name="bits" id="bits" onchange="bits_change()">
 					<option value="2048">2048 (recommended)</option>
 					<option value="4096">4096 (a bit crazy)</option>
+					<option value="own">Provide my own key</option>
 				</select>
 			</dd>
+			<div id="mykey_div" style="display:none">
+			<dt>My Key</dt>
+			<dd><textarea name="mykey" id="mykey"></textarea>
+			</dd>
+			</div>
 			<dt>
 				CSR Signature
 				<div class="fn">This is not your cert signature</div>
@@ -84,6 +90,17 @@
 			input.setAttribute("type","text")
 		}
 	}
+	function bits_change() {
+		var bits = document.getElementById("bits");
+		var mykey_div = document.getElementById("mykey_div");
+
+		if (bits.value == "own") {
+			mykey_div.setAttribute('style',"display:block");
+		} else {
+			mykey_div.setAttribute('style',"display:none");
+		}
+
+	}
 	function doIt() {
 		var f = document.getElementById("mainform");
 		if (!(f['CN'].value||f['emailAddress'].value||f['O'].value||f['OU'].value||
@@ -96,8 +113,7 @@
 		r.onreadystatechange = function () {
 		  if (r.readyState != 4) return;
 		  if (r.status != 200) {
-		  	alert("Error "+r.status+":\n"+
-		  		r.responseText);
+		  	alert("Error "+r.status+":\n"+r.responseText);
 		  	return;
 		  }
 		  var data = JSON.parse(r.responseText);
