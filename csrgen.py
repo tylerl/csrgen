@@ -85,7 +85,7 @@ class App(object):
 
     def handle_error(self,request,code,message=None):
         request.code = code
-        if self.handlers.has_key(code):
+        if code in self.handlers:
             return self.handlers[code](request,message=message)
         headers = [('Content-type', 'text/html')]
         headers.extend(request._out_headers)
